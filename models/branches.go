@@ -44,7 +44,6 @@ type ProtectedBranch struct {
 	ApprovalsWhitelistUserIDs []int64  `xorm:"JSON TEXT"`
 	ApprovalsWhitelistTeamIDs []int64  `xorm:"JSON TEXT"`
 	RequiredApprovals         int64    `xorm:"NOT NULL DEFAULT 0"`
-	GrantedApprovalsCount     int64
 	BlockOnRejectedReviews    bool     `xorm:"NOT NULL DEFAULT false"`
 	DismissStaleApprovals     bool     `xorm:"NOT NULL DEFAULT false"`
 	RequireSignedCommits      bool     `xorm:"NOT NULL DEFAULT false"`

@@ -217,6 +217,8 @@ func issues(ctx *context.Context, milestoneID int64, isPullOption util.OptionalB
 	}
 
 	var commitStatus = make(map[int64]*models.CommitStatus, len(issues))
+	var requiredApprovals = make(map[int64]int64, len(issues))
+	var approvals = make(map[int64]int64, len(issues))
 
 	// Get posters.
 	for i := range issues {
@@ -235,10 +237,13 @@ func issues(ctx *context.Context, milestoneID int64, isPullOption util.OptionalB
 			}
 			pull := issues[i].PullRequest
 
-			if err := pull.LoadProtectedBranch(); err == nil {
-				if pull.ProtectedBranch != nil && pull.ProtectedBranch.RequiredApprovals != 0 {
-					pull.ProtectedBranch.GrantedApprovalsCount = pull.ProtectedBranch.GetGrantedApprovalsCount(pull)
-				}
+			if err := pull.LoadProtectedBranch(); err != nil {
+				return
+			}
+
+			if pull.ProtectedBranch != nil && pull.ProtectedBranch.RequiredApprovals != 0 {
+				requiredApprovals[pull.ID] = pull.ProtectedBranch.RequiredApprovals
+				approvals[pull.ID] = pull.ProtectedBranch.GetGrantedApprovalsCount(pull)
 			}
 
 			commitStatus[pull.ID], _ = pull.GetLastCommitStatus()
@@ -247,6 +252,8 @@ func issues(ctx *context.Context, milestoneID int64, isPullOption util.OptionalB
 
 	ctx.Data["Issues"] = issues
 	ctx.Data["CommitStatus"] = commitStatus
+	ctx.Data["RequiredApprovals"] = requiredApprovals
+	ctx.Data["Approvals"] = approvals
 
 	// Get assignees.
 	ctx.Data["Assignees"], err = repo.GetAssignees()
