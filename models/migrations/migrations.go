@@ -188,6 +188,8 @@ var migrations = []Migration{
 	NewMigration("Fix topic repository count", fixTopicRepositoryCount),
 	// v127 -> v128
 	NewMigration("add repository code language statistics", addLanguageStats),
+	// v128 -> v129
+	NewMigration("Add HTTP deploy keys table", addHTTPDeployKeys),
 }
 
 // Migrate database to current version
