@@ -123,6 +123,13 @@ github.com/denisenkom/go-mssqldb/internal/decimal
 github.com/denisenkom/go-mssqldb/internal/querytext
 # github.com/dgrijalva/jwt-go v3.2.0+incompatible
 github.com/dgrijalva/jwt-go
+# github.com/docker/distribution v2.7.1+incompatible
+github.com/docker/distribution/context
+github.com/docker/distribution/registry/auth
+github.com/docker/distribution/registry/auth/token
+github.com/docker/distribution/uuid
+# github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7
+github.com/docker/libtrust
 # github.com/dustin/go-humanize v1.0.0
 github.com/dustin/go-humanize
 # github.com/editorconfig/editorconfig-core-go/v2 v2.1.1
@@ -272,6 +279,8 @@ github.com/keybase/go-crypto/rsa
 # github.com/klauspost/compress v1.10.2
 github.com/klauspost/compress/flate
 github.com/klauspost/compress/gzip
+# github.com/konsorten/go-windows-terminal-sequences v1.0.1
+github.com/konsorten/go-windows-terminal-sequences
 # github.com/kr/pretty v0.1.0
 github.com/kr/pretty
 # github.com/kr/text v0.1.0
@@ -384,6 +393,8 @@ github.com/shurcooL/httpfs/vfsutil
 github.com/shurcooL/vfsgen
 # github.com/siddontang/go-snappy v0.0.0-20140704025258-d8f7bb82a96d
 github.com/siddontang/go-snappy/snappy
+# github.com/sirupsen/logrus v1.2.0
+github.com/sirupsen/logrus
 # github.com/spf13/afero v1.2.2
 github.com/spf13/afero
 github.com/spf13/afero/mem
@@ -496,6 +507,7 @@ golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/agent
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 golang.org/x/crypto/ssh/knownhosts
+golang.org/x/crypto/ssh/terminal
 # golang.org/x/net v0.0.0-20200114155413-6afb5195e5aa
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
