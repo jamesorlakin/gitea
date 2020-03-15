@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"code.gitea.io/gitea/modules/log"
 )
 
 // AuthServer is the token authentication server
@@ -32,18 +34,18 @@ func NewAuthServer(opt *Option) (*AuthServer, error) {
 }
 
 func (srv *AuthServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	req := srv.parseRequest(r)
 	// grab user's auth parameters
 	username, password, ok := r.BasicAuth()
 	if !ok {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		http.Error(w, "registry: please provide Gitea credentials to interface with this registry", http.StatusUnauthorized)
 		return
 	}
 	user, err := srv.authenticator.Authenticate(username, password)
 	if err != nil {
-		http.Error(w, "unauthorized: invalid auth credentials", http.StatusUnauthorized)
+		http.Error(w, "registry: invalid Gitea credentials", http.StatusUnauthorized)
 		return
 	}
-	req := srv.parseRequest(r)
 	actions, err := srv.authorizer.Authorize(user, req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
@@ -53,7 +55,8 @@ func (srv *AuthServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// from the authorization check
 	tk, err := srv.tokenGenerator.Generate(req, actions)
 	if err != nil {
-		http.Error(w, "server error", http.StatusInternalServerError)
+		log.Error("registry: couldn't generate token: %s", err.Error())
+		http.Error(w, "registry: internal server error", http.StatusInternalServerError)
 		return
 	}
 	srv.ok(w, tk)
@@ -64,6 +67,7 @@ func (srv *AuthServer) parseRequest(r *http.Request) *AuthorizationRequest {
 	req := &AuthorizationRequest{
 		Service: q.Get("service"),
 		Account: q.Get("account"),
+		IP:      r.RemoteAddr,
 	}
 	parts := strings.Split(r.URL.Query().Get("scope"), ":")
 	if len(parts) > 0 {
@@ -82,7 +86,7 @@ func (srv *AuthServer) parseRequest(r *http.Request) *AuthorizationRequest {
 }
 
 func (srv *AuthServer) Run(addr string) error {
-	fmt.Printf("Authentication server running at %s", addr)
+	fmt.Printf("registry: authentication server running at %s", addr)
 	return http.ListenAndServe(addr, srv)
 	// return http.ListenAndServeTLS(addr, srv.crt, srv.key, nil)
 }

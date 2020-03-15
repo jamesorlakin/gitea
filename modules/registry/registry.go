@@ -51,8 +51,8 @@ func (d *GiteaAuthorizer) Authorize(user *models.User, req *AuthorizationRequest
 	}
 
 	path := strings.Split(req.Name, "/")
-	if len(path) != 2 {
-		return []string{}, errors.New("registry: image name must be in repo format")
+	if len(path) < 2 {
+		return []string{}, errors.New("registry: image name must be in 'owner/repo' format")
 	}
 	repo, err := models.GetRepositoryByOwnerAndName(path[0], path[1])
 	if err != nil {
