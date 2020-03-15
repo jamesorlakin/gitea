@@ -45,9 +45,11 @@ func (d *GiteaAuthenticator) Authenticate(username string, password string) (*mo
 type GiteaAuthorizer struct{}
 
 func (d *GiteaAuthorizer) Authorize(user *models.User, req *AuthorizationRequest) ([]string, error) {
+	// If running `docker login` there's no repo info. Skip granting permissions.
 	if req.Name == "" {
 		return []string{}, nil
 	}
+
 	path := strings.Split(req.Name, "/")
 	if len(path) != 2 {
 		return []string{}, errors.New("registry: image name must be in repo format")
@@ -59,9 +61,20 @@ func (d *GiteaAuthorizer) Authorize(user *models.User, req *AuthorizationRequest
 	}
 	perm, err := models.GetUserRepoPermission(repo, user)
 	if err != nil {
-		log.Warn("registry: couldn't get permissions %s @ %s", user.LoginName, repo.Name)
+		log.Warn("registry: couldn't get permissions for %s @ %s", user.LoginName, repo.Name)
 		return []string{}, err
 	}
-	log.Info("%s", perm.IsOwner())
-	return []string{"pull", "push"}, nil
+
+	actions := []string{}
+	canPull := user.IsAdmin || perm.CanRead(models.UnitTypeCode)
+	if canPull {
+		actions = append(actions, "pull")
+	}
+
+	canPush := user.IsAdmin || perm.CanWrite(models.UnitTypeCode)
+	if canPush {
+		actions = append(actions, "push")
+	}
+
+	return actions, nil
 }
