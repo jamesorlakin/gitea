@@ -2,12 +2,6 @@ package registry
 
 // Option is the registry token authorization server configuration options
 type Option struct {
-	// an Authorizer implementation to authorize registry users
-	Authorizer Authorizer
-	// an Authenticator implementation to authenticate registry users
-	Authenticator Authenticator
-	// a pluggable tokenGenerator
-	TokenGenerator TokenGenerator
 	// .crt & .key file to sign JWT tokens
 	Certfile string
 	Keyfile  string

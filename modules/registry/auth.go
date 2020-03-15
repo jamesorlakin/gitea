@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"code.gitea.io/gitea/models"
 	"github.com/docker/distribution/registry/auth/token"
 	"github.com/docker/libtrust"
 )
@@ -23,7 +24,7 @@ type Token struct {
 // An implementation should return a non-nil error when authentication is not successful, otherwise
 // a nil error should be returned
 type Authenticator interface {
-	Authenticate(username, password string) error
+	Authenticate(username, password string) (*models.User, error)
 }
 
 // Authorizer should be implemented to perform authorization.
@@ -31,7 +32,7 @@ type Authenticator interface {
 // this function should return the list of authorized actions and a nil error. an empty list must be returned
 // if requesting user is unauthorized
 type Authorizer interface {
-	Authorize(req *AuthorizationRequest) ([]string, error)
+	Authorize(user *models.User, req *AuthorizationRequest) ([]string, error)
 }
 
 // TokenGenerator is an implementation should create a valid JWT according to the spec here
@@ -39,20 +40,6 @@ type Authorizer interface {
 // a default implementation that follows the spec is used when it is not provided
 type TokenGenerator interface {
 	Generate(req *AuthorizationRequest, actions []string) (*Token, error)
-}
-
-// DefaultAuthenticator makes authentication successful by default
-type DefaultAuthenticator struct{}
-
-func (d *DefaultAuthenticator) Authenticate(username, password string) error {
-	return nil
-}
-
-// DefaultAuthorizer makes authorization successful by default
-type DefaultAuthorizer struct{}
-
-func (d *DefaultAuthorizer) Authorize(req *AuthorizationRequest) ([]string, error) {
-	return []string{"pull", "push"}, nil
 }
 
 type tokenGenerator struct {

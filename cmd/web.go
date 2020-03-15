@@ -14,6 +14,7 @@ import (
 
 	"code.gitea.io/gitea/modules/graceful"
 	"code.gitea.io/gitea/modules/log"
+	"code.gitea.io/gitea/modules/registry"
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/routers"
 	"code.gitea.io/gitea/routers/routes"
@@ -170,6 +171,10 @@ func runWeb(ctx *cli.Context) error {
 			log.Info("%v", http.ListenAndServe("localhost:6060", nil))
 		}()
 	}
+
+	go func() {
+		registry.StartRegistry()
+	}()
 
 	var err error
 	switch setting.Protocol {

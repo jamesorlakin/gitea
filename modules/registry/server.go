@@ -18,25 +18,16 @@ type AuthServer struct {
 
 // NewAuthServer creates a new AuthServer
 func NewAuthServer(opt *Option) (*AuthServer, error) {
-	if opt.Authenticator == nil {
-		opt.Authenticator = &DefaultAuthenticator{}
-	}
-	if opt.Authorizer == nil {
-		opt.Authorizer = &DefaultAuthorizer{}
-	}
-
 	pb, prk, err := loadCertAndKey(opt.Certfile, opt.Keyfile)
 	if err != nil {
 		return nil, err
 	}
 	tk := &TokenOption{Expire: opt.TokenExpiration, Issuer: opt.TokenIssuer}
-	if opt.TokenGenerator == nil {
-		opt.TokenGenerator = newTokenGenerator(pb, prk, tk)
-	}
+	generator := newTokenGenerator(pb, prk, tk)
 	return &AuthServer{
-		authorizer:     opt.Authorizer,
-		authenticator:  opt.Authenticator,
-		tokenGenerator: opt.TokenGenerator, crt: opt.Certfile, key: opt.Keyfile,
+		authorizer:     &GiteaAuthorizer{},
+		authenticator:  &GiteaAuthenticator{},
+		tokenGenerator: generator, crt: opt.Certfile, key: opt.Keyfile,
 	}, nil
 }
 
@@ -47,12 +38,13 @@ func (srv *AuthServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
-	if err := srv.authenticator.Authenticate(username, password); err != nil {
+	user, err := srv.authenticator.Authenticate(username, password)
+	if err != nil {
 		http.Error(w, "unauthorized: invalid auth credentials", http.StatusUnauthorized)
 		return
 	}
 	req := srv.parseRequest(r)
-	actions, err := srv.authorizer.Authorize(req)
+	actions, err := srv.authorizer.Authorize(user, req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
@@ -90,9 +82,9 @@ func (srv *AuthServer) parseRequest(r *http.Request) *AuthorizationRequest {
 }
 
 func (srv *AuthServer) Run(addr string) error {
-	http.Handle("/", srv)
 	fmt.Printf("Authentication server running at %s", addr)
-	return http.ListenAndServeTLS(addr, srv.crt, srv.key, nil)
+	return http.ListenAndServe(addr, srv)
+	// return http.ListenAndServeTLS(addr, srv.crt, srv.key, nil)
 }
 
 func (srv *AuthServer) ok(w http.ResponseWriter, tk *Token) {
