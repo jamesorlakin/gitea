@@ -1,6 +1,9 @@
 package registry
 
 import (
+	"errors"
+	"strings"
+
 	"code.gitea.io/gitea/models"
 	"code.gitea.io/gitea/modules/log"
 )
@@ -45,17 +48,20 @@ func (d *GiteaAuthorizer) Authorize(user *models.User, req *AuthorizationRequest
 	if req.Name == "" {
 		return []string{}, nil
 	}
+	path := strings.Split(req.Name, "/")
+	if len(path) != 2 {
+		return []string{}, errors.New("registry: image name must be in repo format")
+	}
+	repo, err := models.GetRepositoryByOwnerAndName(path[0], path[1])
+	if err != nil {
+		log.Warn("registry: couldn't find repository %s", req.Name)
+		return []string{}, err
+	}
+	perm, err := models.GetUserRepoPermission(repo, user)
+	if err != nil {
+		log.Warn("registry: couldn't get permissions %s @ %s", user.LoginName, repo.Name)
+		return []string{}, err
+	}
+	log.Info("%s", perm.IsOwner())
 	return []string{"pull", "push"}, nil
-	// path := strings.Split(req.Name, "/")
-	// repo, err := models.GetRepositoryByOwnerAndName(path[0], path[1])
-	// if err != nil {
-	// 	log.Warn("registry: couldn't find repository %s", req.Name)
-	// 	return []string{}, err
-	// }
-	// perm, err := models.GetUserRepoPermission(repo, user)
-	// if err != nil {
-	// 	log.Warn("registry: couldn't get permissions %s @ %s", user.LoginName, repo.Name)
-	// 	return []string{}, err
-	// }
-	// log.Info("%s", perm.IsOwner())
 }
