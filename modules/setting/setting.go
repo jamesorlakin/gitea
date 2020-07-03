@@ -27,6 +27,7 @@ import (
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/user"
 
+	"github.com/SherClockHolmes/webpush-go"
 	shellquote "github.com/kballard/go-shellquote"
 	version "github.com/mcuadros/go-version"
 	"github.com/unknwon/com"
@@ -147,6 +148,8 @@ var (
 	// Security settings
 	InstallLock                        bool
 	SecretKey                          string
+	PushNotificationsPublicKey         string
+	PushNotificationsPrivateKey        string
 	LogInRememberDays                  int
 	CookieUserName                     string
 	CookieRememberName                 string
@@ -161,24 +164,25 @@ var (
 
 	// UI settings
 	UI = struct {
-		ExplorePagingNum      int
-		IssuePagingNum        int
-		RepoSearchPagingNum   int
-		MembersPagingNum      int
-		FeedMaxCommitNum      int
-		GraphMaxCommitNum     int
-		CodeCommentLines      int
-		ReactionMaxUserNum    int
-		ThemeColorMetaTag     string
-		MaxDisplayFileSize    int64
-		ShowUserEmail         bool
-		DefaultShowFullName   bool
-		DefaultTheme          string
-		Themes                []string
-		Reactions             []string
-		ReactionsMap          map[string]bool
-		SearchRepoDescription bool
-		UseServiceWorker      bool
+		ExplorePagingNum        int
+		IssuePagingNum          int
+		RepoSearchPagingNum     int
+		MembersPagingNum        int
+		FeedMaxCommitNum        int
+		GraphMaxCommitNum       int
+		CodeCommentLines        int
+		ReactionMaxUserNum      int
+		ThemeColorMetaTag       string
+		MaxDisplayFileSize      int64
+		ShowUserEmail           bool
+		DefaultShowFullName     bool
+		DefaultTheme            string
+		Themes                  []string
+		Reactions               []string
+		ReactionsMap            map[string]bool
+		SearchRepoDescription   bool
+		UseServiceWorker        bool
+		EnablePushNotifications bool
 
 		Notification struct {
 			MinTimeout            time.Duration
@@ -824,6 +828,37 @@ func NewContext() {
 	OnlyAllowPushIfGiteaEnvironmentSet = sec.Key("ONLY_ALLOW_PUSH_IF_GITEA_ENVIRONMENT_SET").MustBool(true)
 	PasswordHashAlgo = sec.Key("PASSWORD_HASH_ALGO").MustString("pbkdf2")
 	CSRFCookieHTTPOnly = sec.Key("CSRF_COOKIE_HTTP_ONLY").MustBool(true)
+
+	// Generate VAPID keys used for the Web Push API.
+	PushNotificationsPublicKey = sec.Key("PUSH_NOTIFICATIONS_PUBLIC_KEY").String()
+	PushNotificationsPrivateKey = sec.Key("PUSH_NOTIFICATIONS_PRIVATE_KEY").String()
+	if PushNotificationsPrivateKey == "" || PushNotificationsPublicKey == "" {
+		log.Info("No VAPID (Web Push) keypair detected. Generating and saving to app.ini")
+		PushNotificationsPrivateKey, PushNotificationsPublicKey, err = webpush.GenerateVAPIDKeys()
+		if err != nil {
+			log.Fatal("error generating VAPID keypair: %v", err)
+			return
+		}
+
+		cfg := ini.Empty()
+		if com.IsFile(CustomConf) {
+			if err := cfg.Append(CustomConf); err != nil {
+				log.Error("failed to load custom conf %s: %v", CustomConf, err)
+				return
+			}
+		}
+		cfg.Section("security").Key("PUSH_NOTIFICATIONS_PUBLIC_KEY").SetValue(PushNotificationsPublicKey)
+		cfg.Section("security").Key("PUSH_NOTIFICATIONS_PRIVATE_KEY").SetValue(PushNotificationsPrivateKey)
+
+		if err := os.MkdirAll(filepath.Dir(CustomConf), os.ModePerm); err != nil {
+			log.Fatal("failed to create '%s': %v", CustomConf, err)
+			return
+		}
+		if err := cfg.SaveTo(CustomConf); err != nil {
+			log.Fatal("error saving generated VAPID keypair to custom config: %v", err)
+			return
+		}
+	}
 
 	InternalToken = loadInternalToken(sec)
 
