@@ -528,6 +528,8 @@ func RegisterRoutes(m *macaron.Macaron) {
 				Get(notify.GetThread).
 				Patch(notify.ReadThread)
 		}, reqToken())
+		// Can also make use of session-based authentication, hence reqToken isn't used as above:
+		m.Post("/notifications/subscription", bind(api.WebPushSubscription{}), notify.NewWebPushSubscription)
 
 		// Users
 		m.Group("/users", func() {
