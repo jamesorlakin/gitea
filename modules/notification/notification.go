@@ -12,6 +12,7 @@ import (
 	"code.gitea.io/gitea/modules/notification/mail"
 	"code.gitea.io/gitea/modules/notification/ui"
 	"code.gitea.io/gitea/modules/notification/webhook"
+	"code.gitea.io/gitea/modules/notification/webpush"
 	"code.gitea.io/gitea/modules/repository"
 	"code.gitea.io/gitea/modules/setting"
 )
@@ -31,6 +32,9 @@ func NewContext() {
 	RegisterNotifier(ui.NewNotifier())
 	if setting.Service.EnableNotifyMail {
 		RegisterNotifier(mail.NewNotifier())
+	}
+	if setting.UI.EnablePushNotifications {
+		RegisterNotifier(webpush.NewNotifier())
 	}
 	RegisterNotifier(indexer.NewNotifier())
 	RegisterNotifier(webhook.NewNotifier())
