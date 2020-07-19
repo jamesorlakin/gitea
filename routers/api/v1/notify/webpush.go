@@ -45,7 +45,7 @@ func NewWebPushSubscription(ctx *context.APIContext, input api.WebPushSubscripti
 		return
 	}
 
-	testPayload := &api.WebPushPayload{
+	testPayload := &api.WebPushNotificationPayload{
 		Title: setting.AppName,
 		Text:  i18n.Tr(ctx.User.Language, "pushnotification.test_message"),
 		URL:   setting.AppURL,

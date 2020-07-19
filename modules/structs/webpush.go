@@ -11,9 +11,9 @@ type WebPushSubscription struct {
 	P256DH   string `json:"p256dh"`
 }
 
-// WebPushPayload marks a JSON payload sent in a push event to the JS service worker.
+// WebPushNotificationPayload marks a JSON payload sent in a push event to the JS service worker.
 // This is used for background notifications.
-type WebPushPayload struct {
+type WebPushNotificationPayload struct {
 	Title string `json:"title"`
 	Text  string `json:"text"`
 	URL   string `json:"url"`

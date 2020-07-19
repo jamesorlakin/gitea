@@ -69,7 +69,7 @@ func deleteWebPushSubscription(e Engine, subscriptionID int64) error {
 // SendWebPushNotificationToUser sends a background Web Push notification to any of the user's
 // enrolled browsers.
 // It will also remove any failed (expired) subscriptions.
-func SendWebPushNotificationToUser(userID int64, payload *structs.WebPushPayload) error {
+func SendWebPushNotificationToUser(userID int64, payload *structs.WebPushNotificationPayload) error {
 	userSubscriptions, err := GetWebPushSubscriptionsByUserID(userID)
 	if err != nil {
 		return err
@@ -102,7 +102,7 @@ func SendWebPushNotificationToUser(userID int64, payload *structs.WebPushPayload
 // SendWebPushNotification sends a background Web Push notification to any of the user's
 // enrolled browsers.
 // The HTTP status code indicates success. err is for more generic problems.
-func SendWebPushNotification(subscription *structs.WebPushSubscription, payload *structs.WebPushPayload) (*http.Response, error) {
+func SendWebPushNotification(subscription *structs.WebPushSubscription, payload *structs.WebPushNotificationPayload) (*http.Response, error) {
 	webPushSubscription := &webpush.Subscription{
 		Endpoint: subscription.Endpoint,
 		Keys: webpush.Keys{
