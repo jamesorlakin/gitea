@@ -161,6 +161,12 @@ func NewFuncMap() []template.FuncMap {
 		"UseServiceWorker": func() bool {
 			return setting.UI.UseServiceWorker
 		},
+		"PushNotificationsEnabled": func() bool {
+			return setting.UI.EnablePushNotifications
+		},
+		"PushNotificationsPublicKey": func() string {
+			return setting.PushNotificationsPublicKey
+		},
 		"FilenameIsImage": func(filename string) bool {
 			mimeType := mime.TypeByExtension(filepath.Ext(filename))
 			return strings.HasPrefix(mimeType, "image/")

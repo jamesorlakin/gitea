@@ -21,3 +21,25 @@ registerRoute(
   ({request}) => cachedDestinations.has(request.destination),
   new StaleWhileRevalidate({cacheName}),
 );
+
+// Push notification event handling
+self.addEventListener('push', (event) => {
+  const eventPayload = event.data.json();
+  const options = {
+    body: eventPayload.text,
+    vibrate: [100, 50, 100],
+    data: {
+      url: eventPayload.url
+    }
+  };
+
+  event.waitUntil(self.registration.showNotification(eventPayload.title, options));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  const notification = event.notification;
+  const url = notification.data.url;
+
+  clients.openWindow(url);
+  notification.close();
+});

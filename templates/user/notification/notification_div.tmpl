@@ -1,6 +1,7 @@
 <div class="user notification" id="notification_div" data-params="{{.Page.GetParams}}">
-	<div class="ui container">
-		<h1 class="ui dividing header">{{.i18n.Tr "notification.notifications"}}</h1>
+    <div class="ui container">
+        <h1 class="ui dividing header">{{.i18n.Tr "notification.notifications"}}</h1>
+        <a class="ui button" style="display: none;" id="pushnotifications_opt_in" data-opt-in="{{.i18n.Tr "pushnotification.opt_in"}}" data-opt-out="{{.i18n.Tr "pushnotification.opt_out"}}"></a>
         <div class="ui top attached tabular menu">
             {{ $notificationUnreadCount := call .NotificationUnreadCount}}
             <a href="{{AppSubUrl}}/notifications?q=unread" class="{{if eq .Status 1}}active{{end}} item">

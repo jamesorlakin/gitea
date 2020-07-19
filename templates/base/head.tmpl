@@ -78,7 +78,9 @@
 				MaxTimeout: {{NotificationSettings.MaxTimeout}},
 				EventSourceUpdateTime: {{NotificationSettings.EventSourceUpdateTime}},
 			},
-      {{if .RequireTribute}}
+			PushNotificationsEnabled: {{PushNotificationsEnabled}},
+			PushNotificationsPublicKey: {{PushNotificationsPublicKey}},
+			{{if .RequireTribute}}
 			tributeValues: [
 				{{ range .Assignees }}
 				{key: '{{.Name}} {{.FullName}}', value: '{{.Name}}',

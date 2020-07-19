@@ -1,3 +1,5 @@
+import initPushNotificationsOptIn from './pushnotifications';
+
 const {UseServiceWorker, AppSubUrl, AppVer} = window.config;
 const cachePrefix = 'static-cache-v'; // actual version is set in the service worker script
 
@@ -35,7 +37,9 @@ export default async function initServiceWorker() {
       // the spec strictly requires it to be same-origin so it has to be AppSubUrl to work
       await Promise.all([
         checkCacheValidity(),
-        navigator.serviceWorker.register(`${AppSubUrl}/serviceworker.js`),
+        navigator.serviceWorker.register(`${AppSubUrl}/serviceworker.js`).then((registration) => {
+          initPushNotificationsOptIn(registration);
+        }),
       ]);
     } catch (err) {
       console.error(err);
