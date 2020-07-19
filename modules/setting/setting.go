@@ -1046,6 +1046,10 @@ func NewContext() {
 	UI.SearchRepoDescription = Cfg.Section("ui").Key("SEARCH_REPO_DESCRIPTION").MustBool(true)
 	UI.UseServiceWorker = Cfg.Section("ui").Key("USE_SERVICE_WORKER").MustBool(true)
 	UI.EnablePushNotifications = Cfg.Section("ui").Key("ENABLE_PUSH_NOTIFICATIONS").MustBool(true)
+	// Push notifications require the service worker.
+	if !UI.UseServiceWorker {
+		UI.EnablePushNotifications = false
+	}
 
 	HasRobotsTxt = com.IsFile(path.Join(CustomPath, "robots.txt"))
 
